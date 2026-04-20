@@ -54,11 +54,14 @@
      )
 
     // Token ko cookie mein set kar rahe hain taaki user logged in rahe
+    // Production mein sameSite: none + secure: true zaroori hai (Vercel<->Render cross-site)
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
-    httpOnly: true,
-    secure: false,       // keep false for localhost
-    sameSite: "lax"
-})
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
+        maxAge: 24 * 60 * 60 * 1000  // 1 din = 86400000 ms
+    })
 
 
      // User ko success response bhej rahe hain with basic info
@@ -111,8 +114,15 @@
          { expiresIn: "1d" }
      )
 
-     // Token ko cookie mein set karo aur user details response mein bhejo
-     res.cookie("token", token)
+      // Token ko cookie mein set karo aur user details response mein bhejo
+      // Production mein sameSite: none + secure: true zaroori hai (Vercel<->Render cross-site)
+      const isProduction = process.env.NODE_ENV === "production";
+      res.cookie("token", token, {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? "none" : "lax",
+          maxAge: 24 * 60 * 60 * 1000  // 1 din = 86400000 ms
+      })
      res.status(200).json({
          message: "User loggedIn successfully.",
          user: {
@@ -138,8 +148,14 @@
          await tokenBlacklistModel.create({ token })
      }
 
-     // Cookie ko browser se clear kar rahe hain
-     res.clearCookie("token")
+      // Cookie ko browser se clear kar rahe hain
+      // clearCookie ke options login/register ke saath match karne chahiye
+      const isProduction = process.env.NODE_ENV === "production";
+      res.clearCookie("token", {
+          httpOnly: true,
+          secure: isProduction,
+          sameSite: isProduction ? "none" : "lax"
+      })
 
      res.status(200).json({
         message: "User logged out successfully"

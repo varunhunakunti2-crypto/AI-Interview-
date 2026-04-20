@@ -8,8 +8,9 @@ const cors = require("cors")
 // Humara main Express app src/app.js se import kar rahe hain
 const app = require("./src/app");
 
-// Server ka port number define kar rahe hain — 3000 pe chalega
-const PORT = 3000;
+// Server ka port number define kar rahe hain
+// Render process.env.PORT inject karta hai — local mein 3000 use hoga
+const PORT = process.env.PORT || 3000;
 
 // Async function jo pehle database connect karti hai, phir server start karti hai
 const startServer = async () => {
