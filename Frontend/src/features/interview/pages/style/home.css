@@ -1,0 +1,191 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem;
+  color: white;
+  gap: 1.25rem;
+}
+
+.home .header {
+  width: min(100%, 1000px);
+  text-align: center;
+  margin-bottom: 0.8rem;
+}
+
+.home .header h1 {
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  max-width: 10ch;
+  margin: 0 auto;
+}
+
+.home .header h1 span {
+  color: #ff4d6d;
+}
+
+.home .header p {
+  color: #a8adb7;
+  font-size: 1rem;
+  max-width: 680px;
+  margin: 1rem auto 0;
+}
+
+.home .card {
+  display: flex;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 26%),
+    rgba(15, 20, 27, 0.94);
+  border-radius: 28px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(12px);
+}
+
+.home .left,
+.home .right {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.home .left,
+.home .right .section {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 22px;
+  padding: 1.2rem;
+}
+
+.home .right {
+  gap: 1rem;
+}
+
+.home .section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+}
+
+.home .section-header span {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 77, 109, 0.14);
+  border: 1px solid rgba(255, 77, 109, 0.2);
+  color: #ff4d6d;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.home .section-header h3,
+.home .section h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.home .section-header .required {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.16);
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+}
+
+.home .section label,
+.home .label {
+  color: #d2d6de;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.home .label span {
+  color: #8d95a1;
+  font-weight: 500;
+}
+
+.home textarea {
+  width: 100%;
+  background: #1a1f27;
+  border-radius: 18px;
+  padding: 1rem 1.05rem;
+  border: 1px solid transparent;
+  color: white;
+  resize: vertical;
+}
+
+.home .left textarea {
+  min-height: 360px;
+}
+
+.home textarea::placeholder {
+  color: #7d8490;
+}
+
+.home .upload-box {
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+    #121821;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.home .upload-box:hover {
+  border-color: #ff4d6d;
+  transform: translateY(-1px);
+}
+
+.home .upload-box p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.home .upload-box small {
+  color: #888;
+}
+
+.home .button {
+  margin-top: auto;
+  width: 100%;
+  min-height: 56px;
+}
+
+@media (max-width: 900px) {
+  .home {
+    padding: 1.2rem;
+  }
+
+  .home .card {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .home .left,
+  .home .right {
+    width: 100%;
+  }
+
+  .home .header h1 {
+    max-width: none;
+  }
+}
