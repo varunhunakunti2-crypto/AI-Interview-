@@ -1,30 +1,47 @@
+// React aur hooks import kar rahe hain
 import React, { useEffect, useState } from "react";
+// Navigation ke liye useNavigate import kar rahe hain
 import { useNavigate } from "react-router-dom";
+// Reusable page header component
 import PageHeader from "../components/PageHeader";
+// Interview history fetch karne ki API function
 import { getInterviewHistory } from "../services/interview.api";
+// useAuth hook se current user ka data
 import { useAuth } from "../../auth/hooks/useAuth";
+// History page ki CSS styles
 import "./style/history.css";
 
+// History page component — saare purane interview reports dikhata hai
 const History = () => {
+  // navigate function — dusre page pe jaane ke liye
   const navigate = useNavigate();
+  // Current logged in user ka data
   const { user } = useAuth();
+  // Reports ki list store karne ke liye state
   const [reports, setReports] = useState([]);
+  // Loading state — data fetch hone tak true rahega
   const [loading, setLoading] = useState(true);
 
+  // Component mount hone par reports fetch karte hain
   useEffect(() => {
+    // ignore flag — agar component unmount ho jaaye toh state update na ho
     let ignore = false;
 
     const loadReports = async () => {
       try {
+        // Backend se saare reports fetch karo
         const history = await getInterviewHistory();
+        // Agar component abhi mounted hai toh reports set karo
         if (!ignore) {
           setReports(history);
         }
       } catch {
+        // Error aaye toh empty array set karo
         if (!ignore) {
           setReports([]);
         }
       } finally {
+        // Loading band karo
         if (!ignore) {
           setLoading(false);
         }
@@ -33,6 +50,7 @@ const History = () => {
 
     loadReports();
 
+    // Cleanup function — component unmount hone par ignore true kar do
     return () => {
       ignore = true;
     };

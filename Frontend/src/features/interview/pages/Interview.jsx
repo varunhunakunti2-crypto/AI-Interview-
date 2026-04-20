@@ -1,28 +1,40 @@
+// React aur required hooks import kar rahe hain
 import React, { useEffect, useMemo, useState } from "react";
+// URL params, navigation aur location hooks import kar rahe hain
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+// Interview page ki CSS styles
 import "./style/interview.css";
+// Reusable header component
 import PageHeader from "../components/PageHeader";
+// Specific report fetch karne ki API function
 import { getInterviewReportById } from "../services/interview.api";
+// Report text format karne ki utility function
 import { buildInterviewReportText } from "../services/report.formatter";
 
+// AnimatedCircle component — match score ko animated circle mein dikhata hai
 const AnimatedCircle = ({ score }) => {
+  // Progress state — animation ke liye 0 se score tak jaayega
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     let current = 0;
+    // Har 20ms mein progress 1 se badheyga jab tak score na pahunch jaaye
     const interval = setInterval(() => {
       current += 1;
       if (current <= score) {
         setProgress(current);
       } else {
+        // Score pe pahunch gaye toh interval band karo
         clearInterval(interval);
       }
     }, 20);
 
+    // Cleanup — component unmount hone par interval saaf karo
     return () => clearInterval(interval);
   }, [score]);
 
   return (
+    // SVG circle jo progress dikhata hai
     <svg className="progress-circle" viewBox="0 0 36 36">
       <path
         className="circle-bg"
@@ -44,23 +56,34 @@ const AnimatedCircle = ({ score }) => {
   );
 };
 
+// Main Interview page component — interview report dikhata hai
 const Interview = () => {
+  // URL state (navigate ke saath bheja gaya data)
   const { state } = useLocation();
+  // navigate function
   const navigate = useNavigate();
+  // URL se interviewId nikalo
   const { interviewId } = useParams();
+  // Active tab state — 'roadmap', 'technical', ya 'behavioral'
   const [activeTab, setActiveTab] = useState("roadmap");
+  // Loading state — agar interviewId hai aur state nahi hai toh loading true hoga
   const [loading, setLoading] = useState(Boolean(interviewId && !state));
+  // Feedback message dikhane ke liye state (copy/export ke baad)
   const [feedbackMessage, setFeedbackMessage] = useState("");
 
+  // Initial data nikalne ka logic — state > localStorage order mein check karta hai
   const initialData = useMemo(() => {
+    // Agar state se data aaya toh use kar lo
     if (state) {
       return state;
     }
 
+    // Agar interviewId hai toh API se fetch karenge (baad mein)
     if (interviewId) {
       return null;
     }
 
+    // LocalStorage mein saved data check karo
     const savedInterview = localStorage.getItem("interviewData");
 
     if (!savedInterview) {
@@ -70,19 +93,23 @@ const Interview = () => {
     try {
       return JSON.parse(savedInterview);
     } catch {
+      // Parse fail hua toh localStorage saaf karo
       localStorage.removeItem("interviewData");
       return null;
     }
   }, [interviewId, state]);
 
+  // data state — interview report ka actual data
   const [data, setData] = useState(initialData);
 
+  // Jab state aaye toh localStorage mein save karo (page refresh pe bhi kaam aaye)
   useEffect(() => {
     if (state) {
       localStorage.setItem("interviewData", JSON.stringify(state));
     }
   }, [state]);
 
+  // Agar interviewId hai aur state nahi hai toh API se report fetch karo
   useEffect(() => {
     if (!interviewId || state) {
       return undefined;
@@ -93,12 +120,15 @@ const Interview = () => {
     const loadInterview = async () => {
       setLoading(true);
       try {
+        // API se specific interview report fetch karo
         const report = await getInterviewReportById(interviewId);
         if (!ignore) {
           setData(report);
+          // localStorage mein bhi save kar lo
           localStorage.setItem("interviewData", JSON.stringify(report));
         }
       } catch {
+        // Error aaye toh message set karo
         if (!ignore) {
           setFeedbackMessage("Unable to load this saved report.");
         }
@@ -111,17 +141,20 @@ const Interview = () => {
 
     loadInterview();
 
+    // Cleanup — component unmount hone par ignore true kar do
     return () => {
       ignore = true;
     };
   }, [interviewId, state]);
 
+  // Report ko clipboard mein copy karne ka function
   const handleCopyReport = async () => {
     if (!data) {
       return;
     }
 
     try {
+      // Report text banao aur clipboard mein copy karo
       await navigator.clipboard.writeText(buildInterviewReportText(data));
       setFeedbackMessage("Report copied to clipboard.");
     } catch {
@@ -129,25 +162,30 @@ const Interview = () => {
     }
   };
 
+  // Report ko text file ke roop mein download karne ka function
   const handleExportReport = () => {
     if (!data) {
       return;
     }
 
+    // File ka naam report title se banao (lowercase aur hyphens ke saath)
     const fileName = (data.title || "interview-report")
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
 
+    // Text content se Blob banao (file create karne ke liye)
     const blob = new Blob([buildInterviewReportText(data)], {
       type: "text/plain;charset=utf-8",
     });
 
+    // Temporary URL banao aur download trigger karo
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     link.download = `${fileName || "interview-report"}.txt`;
     link.click();
+    // URL memory se free karo
     window.URL.revokeObjectURL(url);
     setFeedbackMessage("Report exported successfully.");
   };

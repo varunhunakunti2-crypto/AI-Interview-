@@ -1,15 +1,22 @@
+// .env file se environment variables load kar rahe hain
 require("dotenv").config();
 
+// Groq AI ke saath baat karne ke liye OpenAI-compatible client import kar rahe hain
 const OpenAI = require("openai");
+// Zod library — AI response ka structure validate karne ke liye use hogi
 const { z } = require("zod");
 
+// Groq AI client banate hain — API key aur base URL .env se aa raha hai
 const client = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
 });
 
+// Zod schema define kar rahe hain — AI ke response ka exact structure kya hona chahiye
 const interviewReportSchema = z.object({
+  // Match score 0-100 ke beech hoga
   matchScore: z.number(),
+  // Technical questions ki array
   technicalQuestions: z.array(
     z.object({
       question: z.string(),
@@ -17,6 +24,7 @@ const interviewReportSchema = z.object({
       answer: z.string(),
     })
   ),
+  // Behavioral questions ki array
   behavioralQuestions: z.array(
     z.object({
       question: z.string(),
@@ -24,12 +32,14 @@ const interviewReportSchema = z.object({
       answer: z.string(),
     })
   ),
+  // Skill gaps ki array — skill naam aur severity level
   skillGaps: z.array(
     z.object({
       skill: z.string(),
       severity: z.enum(["low", "medium", "high"]),
     })
   ),
+  // Preparation plan ki array — din, focus aur tasks
   preparationPlan: z.array(
     z.object({
       day: z.number(),
@@ -37,9 +47,11 @@ const interviewReportSchema = z.object({
       tasks: z.array(z.string()),
     })
   ),
+  // Report ka title
   title: z.string(),
 });
 
+// AI ke response se extra markdown formatting hata rahe hain (clean JSON ke liye)
 function cleanAIResponse(text) {
   return text
     .replace(/```json/g, "")
@@ -48,11 +60,15 @@ function cleanAIResponse(text) {
     .trim();
 }
 
+// Fallback report banate hain — agar AI fail ho jaaye toh ye generic report use ki jaayegi
 function buildFallbackReport({ resume, selfDescription, jobDescription }) {
+  // Resume aur self description combine karte hain analysis ke liye
   const sourceText = `${resume || ""} ${selfDescription || ""}`.toLowerCase();
   const roleText = jobDescription || "the target role";
+  // Job description se role title nikalne ki koshish 
   const titleMatch = roleText.match(/(?:role|position|job title)\s*[:\-]\s*([^\n.]+)/i);
   const roleTitle = titleMatch?.[1]?.trim() || "Custom Interview";
+  // Text length ke basis pe match score decide karte hain
   const matchScore = sourceText.length > 80 ? 88 : 84;
 
   return {
@@ -109,7 +125,9 @@ function buildFallbackReport({ resume, selfDescription, jobDescription }) {
   };
 }
 
+// Main function jo AI se interview report generate karta hai
 async function invokeGeminiAi({ resume, selfDescription, jobDescription }) {
+  // Pehle fallback report banao (agar AI fail ho toh kaam aayegi)
   const fallbackReport = buildFallbackReport({
     resume,
     selfDescription,
@@ -117,10 +135,12 @@ async function invokeGeminiAi({ resume, selfDescription, jobDescription }) {
   });
 
   try {
+    // Agar GROQ API key nahi hai toh seedha fallback report return karo
     if (!process.env.GROQ_API_KEY) {
       return fallbackReport;
     }
 
+    // AI ke liye prompt banate hain — resume, self description aur job description dete hain
     const prompt = `
 Resume:
 ${resume}
@@ -166,6 +186,7 @@ Return only JSON:
 }
 `;
 
+    // Groq AI API ko call karte hain — llama model use kar rahe hain
     const response = await client.chat.completions.create({
       model: "llama-3.1-8b-instant",
       response_format: { type: "json_object" },
@@ -181,15 +202,19 @@ Return only JSON:
       ],
     });
 
+    // AI ka raw response leke parse karte hain
     const result = response.choices[0].message.content;
     const parsed = JSON.parse(cleanAIResponse(result));
 
+    // Agar match score 85 se kam hai toh 85 pe set kar do
     if (parsed.matchScore < 85) {
       parsed.matchScore = 85;
     }
 
+    // Zod schema se validate karte hain ki sahi format mein hai ya nahi
     const validated = interviewReportSchema.parse(parsed);
 
+    // Final result return karte hain — agar koi array empty hai toh fallback se fill karo
     return {
       ...validated,
       technicalQuestions: validated.technicalQuestions.length
@@ -206,8 +231,10 @@ Return only JSON:
         : fallbackReport.preparationPlan,
     };
   } catch (error) {
+    // Koi bhi error aaye toh fallback report return karo
     return fallbackReport;
   }
 }
 
+// Is function ko export kar rahe hain taaki controller use kar sake
 module.exports = invokeGeminiAi;

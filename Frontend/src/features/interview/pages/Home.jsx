@@ -1,43 +1,62 @@
+// React aur useState hook import kar rahe hain
 import React, { useState } from "react";
+// Navigation ke liye useNavigate import kar rahe hain
 import { useNavigate } from "react-router-dom";
+// Home page ki CSS styles import kar rahe hain
 import "./style/home.css";
+// Interview generate karne ki API function import kar rahe hain
 import { generateInterview } from "../services/interview.api.js";
+// Reusable PageHeader component import kar rahe hain
 import PageHeader from "../components/PageHeader.jsx";
 
+// Home page component — naya interview strategy generate karne ki page
 const Home = () => {
+  // navigate function — dusre page pe redirect karne ke liye
   const navigate = useNavigate();
 
+  // Job description state
   const [jobDescription, setJobDescription] = useState("");
+  // Self description state
   const [selfDescription, setSelfDescription] = useState("");
+  // Resume file state
   const [resume, setResume] = useState(null);
+  // Loading state — jab report generate ho raha ho
   const [loading, setLoading] = useState(false);
 
+  // Submit button click hone par ye function chalega
   const handleSubmit = async () => {
+    // Job description required hai — nahi diya toh alert dikhao
     if (!jobDescription.trim()) {
       alert("Job description is required");
       return;
     }
 
     try {
+      // Loading start kar do
       setLoading(true);
 
+      // Backend se AI interview report generate karo
       const response = await generateInterview({
         jobDescription,
         selfDescription,
         resume,
       });
 
+      // Response ko localStorage mein save karo (reload ke baad bhi kaam aaye)
       localStorage.setItem("interviewData", JSON.stringify(response));
 
+      // Response mein _id hai toh uske path pe jaao, warna generic path
       const interviewPath = response._id
         ? `/interview/${response._id}`
         : "/interview";
 
+      // Interview page pe redirect karo with response data
       navigate(interviewPath, { state: response });
     } catch (error) {
       console.error(error);
       alert("Something went wrong");
     } finally {
+      // Loading band kar do
       setLoading(false);
     }
   };
